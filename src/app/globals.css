@@ -1,0 +1,14 @@
+/* globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#__next { /* #__next is the root element where Next.js mounts your app */
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto; /* Prevent horizontal scrollbars from appearing unintentionally */
+}
