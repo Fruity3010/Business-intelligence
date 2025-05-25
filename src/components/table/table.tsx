@@ -35,19 +35,19 @@ interface FilterOption {
   label: string;
 }
 
-interface TableColumn {
-  id: string;
+interface TableColumn<T, K extends keyof T> {
+  id: K;
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  format?: (value: any) => string;
+  format?: (value: T[K]) => string;
   filterable?: boolean;
   filterOptions?: FilterOption[];
 }
 
-interface ReusableTableProps {
-  columns: TableColumn[];
-  data: any[];
+interface ReusableTableProps<T extends Record<string, any>> {
+  columns: TableColumn<T, keyof T>[];
+  data: T[];
   title?: string;
   showFilterButton?: boolean;
   initialRowsPerPage?: number;
@@ -55,7 +55,7 @@ interface ReusableTableProps {
   footerContent?: React.ReactNode;
 }
 
-const ReusableTable: React.FC<ReusableTableProps> = ({
+const ReusableTable = <T extends Record<string, any>>({
   columns,
   data,
   title,
@@ -63,19 +63,20 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
   initialRowsPerPage = 10,
   rowsPerPageOptions = [5, 8],
   footerContent,
-}) => {
+}: ReusableTableProps<T>) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
   const [openFilterModal, setOpenFilterModal] = useState(false);
   const [selectedFilterValues, setSelectedFilterValues] = useState<Map<string, Set<string>>>(new Map());
   const [modalFilterSelections, setModalFilterSelections] = useState<Map<string, Set<string>>>(new Map());
-  const [filteredData, setFilteredData] = useState(data);
+  const [filteredData, setFilteredData] = useState<T[]>(data);
   const [expandedFilterPanel, setExpandedFilterPanel] = useState<string | false>(false);
 
   const applyFiltersToData = useCallback(() => {
     let currentFilteredData = data;
-    selectedFilterValues.forEach((selectedOptions, columnId) => {
+    selectedFilterValues.forEach((selectedOptions, columnIdString) => {
       if (selectedOptions.size > 0) {
+        const columnId = columnIdString as keyof T;
         currentFilteredData = currentFilteredData.filter(row =>
           selectedOptions.has(String(row[columnId]))
         );
@@ -98,7 +99,9 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
     setPage(0);
   };
 
-  const filterableColumns = columns.filter(col => col.filterable && col.filterOptions && col.filterOptions.length > 0);
+  const filterableColumns = columns.filter((col): col is TableColumn<T, keyof T> =>
+    col.filterable === true && col.filterOptions !== undefined && col.filterOptions.length > 0
+  );
 
   const handleOpenFilterModal = useCallback(() => {
     const initialModalSelections = new Map<string, Set<string>>();
@@ -108,7 +111,7 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
     setModalFilterSelections(initialModalSelections);
 
     if (filterableColumns.length > 0) {
-      setExpandedFilterPanel(filterableColumns[0].id);
+      setExpandedFilterPanel(String(filterableColumns[0].id));
     } else {
       setExpandedFilterPanel(false);
     }
@@ -128,7 +131,7 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
 
   const handleClearFiltersInModal = useCallback(() => {
     setModalFilterSelections(new Map());
-    setExpandedFilterPanel(false); 
+    setExpandedFilterPanel(false);
     setOpenFilterModal(false);
   }, []);
 
@@ -147,7 +150,7 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
     });
   }, []);
 
-  const handleAccordionChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordionChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedFilterPanel(isExpanded ? panel : false);
   };
 
@@ -169,13 +172,13 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
 
   const paginatedData = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  const activeChips = Array.from(selectedFilterValues.entries()).flatMap(([columnId, values]) => {
-    const column = columns.find(col => col.id === columnId);
+  const activeChips = Array.from(selectedFilterValues.entries()).flatMap(([columnIdString, values]) => {
+    const column = columns.find(col => String(col.id) === columnIdString);
     return Array.from(values).map(value => ({
-      columnId,
-      columnLabel: column?.label || columnId,
+      columnId: columnIdString,
+      columnLabel: column?.label || columnIdString,
       value: value,
-      label: `${column?.label || columnId}: ${value}`,
+      label: `${column?.label || columnIdString}: ${value}`,
     }));
   });
 
@@ -224,7 +227,7 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
             <TableRow>
               {columns.map((column) => (
                 <TableCell
-                  key={column.id}
+                  key={String(column.id)}
                   align={column.align}
                   style={{ minWidth: column.minWidth }}
                   className="bg-gray-100 font-semibold text-gray-700 border-b border-gray-200"
@@ -240,8 +243,8 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
                 {columns.map((column) => {
                   const value = row[column.id];
                   return (
-                    <TableCell key={column.id} align={column.align} className="text-gray-700">
-                      {column.format && typeof value === 'number' ? column.format(value) : value}
+                    <TableCell key={String(column.id)} align={column.align} className="text-gray-700">
+                      {column.format ? column.format(value) : value}
                     </TableCell>
                   );
                 })}
@@ -286,9 +289,9 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
           <Box sx={{ width: '50%', overflowY: 'auto', pr: 2 }}>
             {filterableColumns.map((column) => (
               <Accordion
-                key={column.id}
-                expanded={expandedFilterPanel === column.id}
-                onChange={handleAccordionChange(column.id)}
+                key={String(column.id)}
+                expanded={expandedFilterPanel === String(column.id)}
+                onChange={handleAccordionChange(String(column.id))}
                 disabled={!column.filterOptions || column.filterOptions.length === 0}
                 sx={{
                   '&.Mui-expanded': {
@@ -302,8 +305,8 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
-                  aria-controls={`${column.id}-content`}
-                  id={`${column.id}-header`}
+                  aria-controls={`${String(column.id)}-content`}
+                  id={`${String(column.id)}-header`}
                 >
                   <Typography variant="subtitle1" className="font-semibold text-gray-800">
                     {column.label}
@@ -320,13 +323,13 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
 
           <Divider orientation="vertical" flexItem sx={{ mr: 2 }} />
           <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 2, maxWidth: '50%'}}>
-           
+
             {!expandedFilterPanel ? (
               <Box sx={{
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                height: '100%', 
+                height: '100%',
                 color: 'text.secondary'
               }}>
                 <Typography variant="body1">Select a filter category .</Typography>
@@ -334,9 +337,9 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
             ) : (
               filterableColumns.map((column) => (
                 <AccordionDetails
-                  key={`details-${column.id}`}
+                  key={`details-${String(column.id)}`}
                   sx={{
-                    display: expandedFilterPanel === column.id ? 'block' : 'none',
+                    display: expandedFilterPanel === String(column.id) ? 'block' : 'none',
                     p: 0,
                   }}
                 >
@@ -349,8 +352,8 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
                         key={option.value}
                         control={
                           <Checkbox
-                            checked={modalFilterSelections.get(column.id)?.has(option.value) || false}
-                            onChange={(e) => handleCheckboxChange(column.id, option.value, e.target.checked)}
+                            checked={modalFilterSelections.get(String(column.id))?.has(option.value) || false}
+                            onChange={(e) => handleCheckboxChange(String(column.id), option.value, e.target.checked)}
                           />
                         }
                         label={option.label}

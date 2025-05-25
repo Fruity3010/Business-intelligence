@@ -1,6 +1,5 @@
 
 import RegisterForm from '@/components/forms/registerForm';
-import AnimatedBox from '@/components/aniBox';
 import Box from '@mui/material/Box';
 
 export default function RegisterPage() {

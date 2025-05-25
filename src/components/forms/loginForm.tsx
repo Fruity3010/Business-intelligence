@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/auth';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
-import { Formik, Form, Field } from 'formik'; 
+import { Formik, Form } from 'formik'; 
 
 
 import { loginSchema } from './validation/authvalidationSchema'
@@ -57,7 +57,7 @@ const LoginForm: React.FC = () => {
       <Formik
         initialValues={initialValues}
         validationSchema={loginSchema} 
-        onSubmit={async (values, { setSubmitting, setFieldError }) => {
+        onSubmit={async (values, { setSubmitting }) => {
           setLoading(true);
           try {
             const success = await login(values.email, values.password, values.keepLoggedIn);
@@ -153,7 +153,7 @@ const LoginForm: React.FC = () => {
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Don't have an account?{' '}
+                Dont have an account?{' '}
                 <Link href="/register" passHref style={{ textDecoration: 'none' }}>
                   <Typography component="span" color="primary" sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
                     Register

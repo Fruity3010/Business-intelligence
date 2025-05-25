@@ -20,19 +20,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const { user, logout } = useAuth();
 
-  React.useEffect(() => {
-    if (isMobile) {
-      setOpen(true);
-    } else {
-      setOpen(false);
-    }
-  }, []);
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);

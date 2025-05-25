@@ -3,7 +3,7 @@ import {
     registerUser,
     logoutUser,
     setCurrentUser,
-    getCurrentUser,
+    
   } from '@/lib/auth';
   
   import { User } from '@/types/user';

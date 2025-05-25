@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Table from '../../../components/table/table'; 
+import Table from '../../../components/table/table';
 import { Box } from '@mui/material';
 
 interface UserData {
@@ -10,23 +10,24 @@ interface UserData {
   city: string;
 }
 
-
 interface FilterOption {
-  value: string; 
-  label: string; 
+  value: string;
+  label: string;
 }
 
-interface TableColumn {
-  id: string;
+
+interface TableColumn<T, K extends keyof T> {
+  id: K;
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  format?: (value: any) => string;
+  format?: (value: T[K]) => string; 
   filterable?: boolean;
   filterOptions?: FilterOption[];
 }
 
-const sampleColumns: TableColumn[] = [
+
+const sampleColumns: TableColumn<UserData, keyof UserData>[] = [
   { id: 'id', label: 'ID', minWidth: 50, align: 'center' },
   { id: 'name', label: 'Name', minWidth: 170 },
   { id: 'email', label: 'Email', minWidth: 200 },
@@ -35,7 +36,8 @@ const sampleColumns: TableColumn[] = [
     label: 'Age',
     minWidth: 100,
     align: 'right',
-    format: (value: number) => value.toLocaleString(),
+ 
+    format: (value) => value.toLocaleString(),
     filterable: true,
 
     filterOptions: [
@@ -45,7 +47,6 @@ const sampleColumns: TableColumn[] = [
       { value: '30', label: 'Age 30' },
       { value: '38', label: 'Age 38' },
       { value: '50', label: 'Age 50' },
-    
     ],
   },
   {
@@ -79,21 +80,17 @@ const sampleData: UserData[] = [
 ];
 
 export default function App() {
-
-  const [tableData, setTableData] = useState(sampleData);
+  const [tableData] = useState(sampleData);
 
   return (
-    <Box className=" flex flex-col items-center justify-center p-6 h-full bg-transparent " > 
-   
-        <Table
-          columns={sampleColumns}
-          data={tableData}
-          title="New Users"
-          showFilterButton={true} 
-          initialRowsPerPage={5}
-            
-        />
-   
+    <Box className=" flex flex-col items-center justify-center p-6 h-full bg-transparent " >
+      <Table
+        columns={sampleColumns}
+        data={tableData}
+        title="New Users"
+        showFilterButton={true}
+        initialRowsPerPage={5}
+      />
     </Box>
   );
 }
