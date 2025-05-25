@@ -1,7 +1,8 @@
-import axios, { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
+import axios, { AxiosError } from "axios";
+import { toast } from "react-toastify";
 
-const MOCKAPI_BASE_URL = 'https://6830d6846205ab0d6c3a95ea.mockapi.io/mockapi/v1';
+const MOCKAPI_BASE_URL =
+  "https://6830d6846205ab0d6c3a95ea.mockapi.io/mockapi/v1";
 
 interface User {
   password: string;
@@ -17,6 +18,20 @@ export const registerUser = async (
   fullName: string
 ): Promise<User | null> => {
   try {
+    const existingUserRes = await axios.get<User[]>(
+      `${MOCKAPI_BASE_URL}/users`,
+      {
+        params: { email },
+      }
+    );
+
+    if (existingUserRes.data.length > 0) {
+      toast.error(
+        "Registration failed: An account with this email already exists."
+      );
+      return null;
+    }
+
     const response = await axios.post<User>(`${MOCKAPI_BASE_URL}/users`, {
       email,
       password,
@@ -24,21 +39,22 @@ export const registerUser = async (
     });
 
     if (response.status === 201) {
-      toast.success('Registration successful! Logging you in...');
+      toast.success("Registration successful! Logging you in...");
       return loginUser(email, password);
     }
+
     toast.error(`Registration failed: Unexpected status ${response.status}`);
     return null;
   } catch (error) {
     const axiosError = error as AxiosError;
     if (axiosError.response) {
-      if (axiosError.response.status === 409) {
-        toast.error('Registration failed: An account with this email already exists.');
-      } else {
-        toast.error(`Registration failed: ${axiosError.response.status} - ${axiosError.response.statusText}`);
-      }
+      toast.error(
+        `Registration failed: ${axiosError.response.status} - ${axiosError.response.statusText}`
+      );
     } else if (axiosError.request) {
-      toast.error('Registration failed: No response from server. Check your network.');
+      toast.error(
+        "Registration failed: No response from server. Check your network."
+      );
     } else {
       toast.error(`Registration failed: ${axiosError.message}`);
     }
@@ -65,17 +81,17 @@ export const loginUser = async (
           const userWithToken: User = {
             email: loggedInUser.email,
             fullName: loggedInUser.fullName,
-            token: loggedInUser.token || 'mock-generated-token-on-login',
+            token: loggedInUser.token || "mock-generated-token-on-login",
             id: loggedInUser.id,
             password: loggedInUser.password,
           };
-          toast.success('Login successful!');
+          toast.success("Login successful!");
           return userWithToken;
         }
-        toast.error('Login failed: Invalid email or password.');
+        toast.error("Login failed: Invalid email or password.");
         return null;
       }
-      toast.error('Login failed: Invalid email or password.');
+      toast.error("Login failed: Invalid email or password.");
       return null;
     }
     toast.error(`Login failed: Unexpected status ${response.status}`);
@@ -84,12 +100,14 @@ export const loginUser = async (
     const axiosError = error as AxiosError;
     if (axiosError.response) {
       if (axiosError.response.status === 404) {
-        toast.error('Login failed: Invalid email or password.');
+        toast.error("Login failed: Invalid email or password.");
       } else {
-        toast.error(`Login failed: ${axiosError.response.status} - ${axiosError.response.statusText}`);
+        toast.error(
+          `Login failed: ${axiosError.response.status} - ${axiosError.response.statusText}`
+        );
       }
     } else if (axiosError.request) {
-      toast.error('Login failed: No response from server. Check your network.');
+      toast.error("Login failed: No response from server. Check your network.");
     } else {
       toast.error(`Login failed: ${axiosError.message}`);
     }
@@ -99,7 +117,7 @@ export const loginUser = async (
 
 export const logoutUser = async (): Promise<void> => {
   try {
-    toast.info('You have been logged out.');
+    toast.info("You have been logged out.");
   } catch (error) {
     const axiosError = error as AxiosError;
     toast.error(`Error during logout: ${axiosError.message}`);
@@ -107,13 +125,13 @@ export const logoutUser = async (): Promise<void> => {
 };
 
 export const getCurrentUser = (): User | null => {
-  if (typeof window !== 'undefined') {
-    const userString = localStorage.getItem('currentUser');
+  if (typeof window !== "undefined") {
+    const userString = localStorage.getItem("currentUser");
     if (userString) {
       try {
         return JSON.parse(userString);
       } catch (error) {
-        console.error('Error parsing user data from storage:', error);
+        console.error("Error parsing user data from storage:", error);
         return null;
       }
     }
@@ -122,11 +140,11 @@ export const getCurrentUser = (): User | null => {
 };
 
 export const setCurrentUser = (user: User | null) => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      localStorage.setItem("currentUser", JSON.stringify(user));
     } else {
-      localStorage.removeItem('currentUser');
+      localStorage.removeItem("currentUser");
     }
   }
 };
@@ -136,14 +154,14 @@ export const isAuthenticated = (): boolean => {
 };
 
 export const getKeepLoggedInPreference = (): boolean => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('keepLoggedIn') === 'true';
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("keepLoggedIn") === "true";
   }
   return false;
 };
 
 export const setKeepLoggedInPreference = (keepLoggedIn: boolean) => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('keepLoggedIn', String(keepLoggedIn));
+  if (typeof window !== "undefined") {
+    localStorage.setItem("keepLoggedIn", String(keepLoggedIn));
   }
 };

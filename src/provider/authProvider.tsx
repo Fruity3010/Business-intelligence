@@ -73,7 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       inactivityTimerRef.current = null;
     }
 
-    console.log('AuthProvider: Logout successful, redirecting to /');
     router.push('/');
     setLoading(false);
   }, [router]);
@@ -169,8 +168,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
           resetInactivityTimer();
-
-          console.log('AuthProvider: Login successful, redirecting to /dashboard');
           router.push('/dashboard');
           return true;
         }
@@ -196,7 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           resetInactivityTimer();
 
-          console.log('AuthProvider: Registration successful, redirecting to /dashboard');
+        
           router.push('/dashboard');
           return true;
         }
