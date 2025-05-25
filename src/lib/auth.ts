@@ -3,6 +3,7 @@ import axios from 'axios';
 const MOCKAPI_BASE_URL = 'https://6830d6846205ab0d6c3a95ea.mockapi.io/mockapi/v1';
 
 interface User {
+  password: string;
   email: string;
   fullName: string;
   token: string;
@@ -55,42 +56,51 @@ export const loginUser = async (
   try {
     console.log('📡 Calling MockAPI.io /users endpoint to login with email:', email);
 
+    // Step 1: Fetch users with matching email
     const response = await axios.get<User[]>(`${MOCKAPI_BASE_URL}/users`, {
-      params: { email: email },
+      params: { email: email, password: password },
     });
 
     if (response.status === 200) {
       const users = response.data;
 
+      // Step 2: If user exists, verify password
       if (users.length > 0) {
         const loggedInUser = users[0];
 
-        const userWithToken: User = {
-          email: loggedInUser.email,
-          fullName: loggedInUser.fullName,
-          token: loggedInUser.token || 'mock-generated-token-on-login',
-          id: loggedInUser.id,
-        };
+        if (loggedInUser.password === password) {
+          const userWithToken: User = {
+            email: loggedInUser.email,
+            fullName: loggedInUser.fullName,
+            token: loggedInUser.token || 'mock-generated-token-on-login',
+            id: loggedInUser.id,
+            password: loggedInUser.password, 
+          };
 
-        console.log('MockAPI.io login successful for:', userWithToken.email);
-        return userWithToken;
+          console.log('✅ Login successful for:', userWithToken.email);
+          return userWithToken;
+        } else {
+          console.error('❌ Login failed: Incorrect password for email:', email);
+          return null;
+        }
       } else {
-        console.error('Login failed: User not found with email:', email);
+        console.error('❌ Login failed: No user found with email:', email);
         return null;
       }
     } else {
-      console.error('Error fetching user for login with status:', response.status, response.statusText);
+      console.error('❌ Error fetching user with status:', response.status, response.statusText);
       return null;
     }
   } catch (error: any) {
     if (error.response) {
-      console.error('Login failed:', error.response.status, error.response.data);
+      console.error('❌ Login failed:', error.response.status, error.response.data);
     } else {
-      console.error('⚠️ Network or unexpected error during login:', error.message);
+      console.error('⚠️ Unexpected error during login:', error.message);
     }
     return null;
   }
 };
+
 
 export const logoutUser = async (): Promise<void> => {
   try {
