@@ -9,7 +9,7 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import {
   getCurrentUser,
@@ -56,7 +56,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogoutRef = useRef<(() => Promise<void>) | null>(null);

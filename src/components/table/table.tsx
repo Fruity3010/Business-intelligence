@@ -45,8 +45,8 @@ interface TableColumn<T, K extends keyof T> {
   filterOptions?: FilterOption[];
 }
 
-interface ReusableTableProps<T extends Record<string, any>> {
-  columns: TableColumn<T, keyof T>[];
+interface ReusableTableProps<T extends object> { 
+  columns: Array<TableColumn<T, keyof T>>;
   data: T[];
   title?: string;
   showFilterButton?: boolean;
@@ -55,7 +55,7 @@ interface ReusableTableProps<T extends Record<string, any>> {
   footerContent?: React.ReactNode;
 }
 
-const ReusableTable = <T extends Record<string, any>>({
+const ReusableTable = <T extends object>({
   columns,
   data,
   title,
@@ -244,7 +244,7 @@ const ReusableTable = <T extends Record<string, any>>({
                   const value = row[column.id];
                   return (
                     <TableCell key={String(column.id)} align={column.align} className="text-gray-700">
-                      {column.format ? column.format(value) : value}
+                      {column.format ? column.format(value) : String(value)}
                     </TableCell>
                   );
                 })}

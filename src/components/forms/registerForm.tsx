@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/auth';
 import Link from 'next/link';
-import { toast } from 'react-toastify';
 import { Formik, Form } from 'formik';
 
 import { registerSchema } from './validation/authvalidationSchema';
@@ -59,24 +58,7 @@ const RegisterForm: React.FC = () => {
         onSubmit={async (values, { setSubmitting }) => {
           setLoading(true);
           try {
-            const success = await register(values.email, values.password, values.fullName);
-            if (success) {
-              toast.success('Registration successful! Redirecting to dashboard.', {
-                position: 'top-right',
-                autoClose: 2000,
-              });
-            } else {
-              toast.error('Registration failed. This email might already be in use.', {
-                position: 'top-right',
-                autoClose: 5000,
-              });
-            }
-          } catch (apiError) {
-            console.error('API call error during registration:', apiError);
-            toast.error('An unexpected error occurred during registration. Please try again.', {
-              position: 'top-right',
-              autoClose: 5000,
-            });
+            await register(values.email, values.password, values.fullName);
           } finally {
             setLoading(false);
             setSubmitting(false);
